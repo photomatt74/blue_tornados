@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8 />
+  <title>Average Monthly Rent in America</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+  <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: whitesmoke;
+      font-family: Lato, sans-serif;
+      color: #0D0000;
+    }
+
+    header {
+      width: 80%;
+      margin: 10px auto 10px auto;
+    }
+
+    h1 {
+      display: inline-block;
+      margin-right: 20px;
+      color: #001323;
+    }
+
+    h2 {
+      display: inline-block;
+      color: #001323;
+    }
+
+    #map {
+      width: 80%;
+      height: 740px;
+      margin: 10px 10%;
+      background: whitesmoke;
+      border: 2px solid #dddedf;
+    }
+    #info-button {
+      padding: 8px 5px;
+      font-size: 0.9em;
+      font-weight: bolder;
+      /* Style matches Leaflet controls */
+      border: 2px solid rgba(244, 244, 244, 0.2);
+      background: rgba(100, 100, 100, 0.9);
+      color: rgba(244, 244, 244, 0.8);
+      border-radius: 5px;
+      /* Position is fixed next to the zoom bar */
+      position: fixed;
+      top: 11px;
+      right: 52px;
+      /* Draw it on top of all elements */
+      z-index: 9999;
+      /* Cursor change on hover -- doesn't work on touch screensn */
+      cursor: pointer;
+  }
+
+    #footer {
+      width: 100%;
+      background: rgba(244, 244, 244, 0.8);
+      color: rgba(20, 20, 20, 0.8);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      height: 0px;
+      padding: 0px;
+      /* display below the button to allow clicking if overlay covers screen */
+      z-index: 9000;
+      position: absolute;
+      bottom: -10px;
+      /* If too much is included, enable scroll */
+      overflow: scroll;
+    }
+
+    #footer div {
+      padding: 10px;
+    }
+
+    #footer h1 {
+      font-size: 1.3em;
+      margin: 0 0 5px 0;
+    }
+
+    .footer-img {
+      float: right;
+      height: 10vh;
+      margin: 10px;
+    }
+
+    a {
+      color: #004A8B;
+    }
+
+    a:hover {
+      color: rgb(67, 69, 71);
+      text-decoration: none;
+    }
+
+    p {
+      font-size: 1em;
+      color: #001323;
+    }
+
+ .legend {
+      padding: 6px 8px;
+      font-size: 1em;
+      /* Use transparency to blend elements. */
+      border: 2px solid rgba(145, 168, 153, 0.2);
+      background: rgba(233, 232, 232, 0.9);
+      color: rgba(0, 0, 0, 0.8);
+      border-radius: 5px;
+  } 
+
+    .legend h3 {
+      font-size: 1.3em;
+      font-weight: bolder;
+      color: rgb(4, 4, 4);
+      /* Light */
+      margin: 0 0 10px 0;
+    }
+
+    .legend span {
+      width: 20px;
+      height: 20px;
+      float: left;
+      margin: 0 10px 4px 0;
+    }
+
+    .legend label {
+      font-size: 1em;
+    }
+
+    .legend label:after {
+      content: ' ';
+      display: block;
+      clear: both;
+    }
+
+    .leaflet-bar a {
+      /* Override the default style for Leaflet's zoom  */
+      background: rgba(100, 100, 100, 0.9);
+      color: rgba(244, 244, 244, 0.8);
+    }
+    
+    footer {
+      padding: 6px 10%;
+      width: 80%;
+    }
+
+    p {
+      font-size: 1em;
+      color: #001323;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>American Home:</h1>
+    <h2>The monthly price of freedom</h2>
+  </header>
+
+  <div id='map'></div>
+  <button id="info-button" onclick="myInfo()">Information</button>
+  <div id='footer'>
+    <div>
+    <p>Map authored by Matt Barton</p>
+    <p>The United States is facing an affordable housing crisis. Access to secure, high-quality housing at an affordable 
+      price has become increasingly difficult and seemingly impossible in some areas. This map shows the 2015 average rental price 
+      for every county in the United States of America according to American FactFinder. 
+    </p> </div>
+  </div>
+
+  <!-- Load scripts using Subresource Integrity (SRI) is a security feature 
+      that enables browsers to verify that resources they fetch (from a CDN) 
+      are delivered without unexpected manipulation. -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+  <script src='https://unpkg.com/simple-statistics@7.6.0/dist/simple-statistics.min.js'>
+  </script>
+
+  <script>
+    var options = {
+      center: [37.8, -85.8],
+      zoom: 7.4,
+      zoomSnap: .1,
+      zoomControl: false
+    };
+
+    var map = L.map('map', options);
+
+    map.addControl(L.control.zoom({
+      position: 'topright'
+    }));
+
+    // Global vars
+
+    var nameValue = "NAME", rentValue = "RENT";
+
+    $.getJSON("data/counties_median_rent_2015.json", function (data) {
+      // L.geoJson(data).addTo(map);
+      L.geoJson(data, {
+        style: function (feature) {
+          return {
+            color: '#dddddd',
+            weight: 1,
+            fillOpacity: 1,
+            fillColor: '#2ca25f'
+          };
+        }
+      }).addTo(map);  // L.geoJson ends
+
+      var countyLayer = $.getJSON("data/counties_median_rent_2015.json", function (data) {
+
+        var dataLayer = L.geoJson(data, {
+          style: function (feature) {
+            return {
+              color: '#444',
+              weight: 1,
+              fillOpacity: 1,
+              fillColor: '#2ca25f'
+            };
+          }
+        }); // close datalayer
+
+        // console.log(countyLayer);
+
+        // find zoom extent from new layer
+        // var zoomExtent = dataLayer.getBounds();
+
+        // Apply the extent to our map with a custom property
+        // that says max zoom on load will not exceed 8
+        // which adds margin around the state.
+        // map.fitBounds(zoomExtent, {
+        //   maxZoom: 8
+        // })
+
+        dataLayer.addTo(map)
+
+        drawMap(dataLayer);
+
+      }); // close county layer
+
+
+      function drawMap(dataLayer) {
+
+        var breaks = getClassBreaks(dataLayer);
+
+        drawLegend(breaks)
+
+        dataLayer.eachLayer(function (layer) {
+
+          var props = layer.feature.properties;
+
+          // define toolTipInfo
+          var toolTipInfo =`<b>${props.NAME} County </b><br> `+ `Average Rent  $` + props.RENT;
+
+          layer.setStyle({
+            fillColor: getColor(props.RENT, breaks) // This SHOULD return red color if null. NOT WORKING
+          });
+          // console.log(props.NAME,props.RENT);
+          layer.on('mouseover', function () {
+            layer.setStyle({
+              fillColor: 'yellow'
+            });
+          });
+          layer.on('mouseout', function () {
+            layer.setStyle({
+              fillColor: getColor(props.RENT, breaks)
+            });
+          });
+          if (L.Browser.mobile) {
+            // if true use popup
+            layer.bindPopup(toolTipInfo);
+          } else {
+            // if false use tooltip
+            layer.bindTooltip(toolTipInfo, 
+          {sticky: true,
+            maxHeight: 10,
+            offset: [15,0] });
+          };
+
+        }); // close each layer
+      }; // close drawMap
+
+      function getClassBreaks(dataLayer) {
+
+        // create empty Array for storing values
+        var values = [];
+
+        // loop through all the counties
+        dataLayer.eachLayer(function (layer) {
+          var props = layer.feature.properties;
+          var value = props.RENT;
+          if ( typeof(props.RENT) !== "undefined" && props.RENT !== null ) {
+            values.push(parseFloat(value)); // parseFloat saves the day... wow fixed it.
+          } else {
+            // value = 0;   
+            // console.log(props.NAME,'county rent is ',props.RENT);
+            // console.log(values);
+          }
+        });
+
+        // determine similar clusters
+        var clusters = ss.ckmeans(values, 5);
+
+        // create an array of the lowest value within each cluster
+        var breaks = clusters.map(function (cluster) {
+          return [cluster[0], cluster.pop()];
+        });
+
+        console.log(clusters);
+        console.log(breaks);
+
+        return breaks; // return Array of class breaks
+
+      }; // end getClassBreaks function
+
+      function getColor(d, breaks) {
+        //  green class['#edf8e9','#bae4b3','#74c476','#31a354','#006d2c']
+        // if (d == 0) {
+        //   // console.log(d);
+        //   return '#a33180';  <--- If value is 0, return the color red. Only worked in the legend. 
+        // }  else {
+          if (d <= breaks[0][1]) {
+            return '#edf8e9';
+          } else if (d <= breaks[1][1]) {
+            return '#bae4b3';
+          } else if (d <= breaks[2][1]) {
+            return '#74c476';
+          } else if (d <= breaks[3][1]) {  
+            return '#31a354';
+          } else if (d <= breaks[4][1]) {
+            return '#006d2c'}
+        // };
+      } // end getColor
+
+
+      function drawLegend(breaks) {
+
+        // create a new Leaflet control object, and position it top left
+        var legend = L.control({
+          position: 'topleft'
+        });
+
+        // when the legend is added to the map
+        legend.onAdd = function () {
+
+          // create a new HTML <div> element and give it a class name of "legend"
+          var div = L.DomUtil.create('div', 'legend');
+
+          div.innerHTML = `<h3>Average Rental Price</h3>`;
+
+          // for each of our breaks
+          for (var i = 0; i < breaks.length; i++) {
+            // determine the color associated with each break value,
+            // including the lower range value
+            var color = getColor(breaks[i][0], breaks);
+            // console.log(breaks[i][0]);
+
+            // concatenate a <span> tag styled with the color and the range values
+            // of that class and include a label with the low and a high ends of that class range
+            div.innerHTML +=
+              `<span style="background:${color}"></span>
+            <label>$${(breaks[i][0]).toLocaleString()}&mdash;
+            $${(breaks[i][1]).toLocaleString()}</label>`;
+          }
+
+          // return the populated div to be added to the map
+          return div;
+        };
+
+        // add the legend to the map
+        legend.addTo(map);
+      }
+
+      // Tell jQuery to wait until data is loaded before executing a function
+      $.when(countyLayer).done(function () {
+        // load, filter, and style the state outline 
+        $.getJSON("data/us_states_20m.geojson", function (data) {
+
+          var stateLayer = L.geoJson(data, {
+            style: function (feature) {
+              return {
+                // Let's experiment with these colors shortly
+                color: '#222222', // Gray
+                // color: '#ffffff', // White
+                // Make line weight larger than the county outline
+                weight: 3,
+                fillOpacity: 0,
+                // This property allows us control interactivty of layer
+                interactive: false
+              };
+            }
+
+            // Filter for the correct state to use
+            // filter: function (feature) {
+            //   if (feature.properties.NAME == "Kentucky") {
+            //     return feature;
+            //   }
+            // }
+          });
+
+          // Add layer to map!
+          stateLayer.addTo(map)
+        });
+      });
+    });
+       /* --------------- Toggle on/off info footer content ---------------  */
+       var clicked = false // start with false condition
+    function myInfo() {
+
+      // create button that changes color on click
+      // create a footer overlay that displays 33% of the current viewport height
+      var x = document.getElementById('footer');
+      var y = document.getElementById('info-button');
+      if (clicked) {
+        y.style.background = 'rgba(100, 100, 100, 0.9)'; // gray button
+        x.style.height = '0px'; // no footer height 
+      } else {
+        y.style.background = 'rgba(146, 239, 146, 0.8)' // green button
+        x.style.height = '33vh'; // footer 33% of viewport height
+      }
+      clicked = !clicked
+
+    }
+  </script>
+
+</body>
+
+</html>
