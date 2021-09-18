@@ -174,11 +174,41 @@
       }
         }; // info closed
 
-    var place = [layerInfo.lat,layerInfo.lng];
+    // var place = [layerInfo.lat,layerInfo.lng];
 
+    //  Create empty layer group
+    let tornadoGroup = L.layerGroup();
+
+    //  Loop through the data and create a line for each valid feature
     for (let t of tornados) {
-        console.log(t);
+        
+        // Load coordinates and convert them to numbers with + operator
+        const cords = [
+            +t.BEGIN_LAT, +t.BEGIN_LON, +t.END_LAT, +t.END_LON
+        ]
+
+        // Test all four values to see if they are valid
+        const check = cords.every(cord => {
+            
+            // Returns true if all values are valid
+            return typeof(cord) === 'number' && !isNaN(cord) && cord !== 0;  
+        })
+        // If true, build the line and add it to the layergroup
+        if (check) {        
+            const polyline = L.polyline([[cords[0], cords[1]],[cords[2], cords[3]]], commonStyles)
+
+            //  Style and create popup content
+            // Create functions to draw legend, add interactivity, etc. because you have access to properties here
+
+            tornadoGroup.addLayer(polyline)     
+        } else {
+            console.log(t)
+        } 
     }
+
+    tornadoGroup.addTo(map);
+
+    // tornadoGroup can now have events added to it
 
     var geoJsonLayers = {};  // trying to make a json into a geoJSON
 
