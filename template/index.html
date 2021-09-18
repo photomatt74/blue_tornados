@@ -123,7 +123,7 @@
     <div id='map'></div>
     <footer>
         <p>Map authored by Matt Barton</p>
-        <p>Are we having more tornados in Kentucky? This map will show tornados in Kentucky by location and decade. 
+        <p>Are we having more tornados in Kentucky? This map will show tornados in Kentucky by location and decade.
         </p>
     </footer>
 
@@ -135,7 +135,7 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin=""></script>
-    <script src="data/tornados.geojson">
+    <script src="data/ky_tornados_1961_2021.json">
     </script>
 
     <script>
@@ -152,66 +152,71 @@
             });
         tiles.addTo(map);
 
+            // commonStyles 
+    var commonStyles = {
+      stroke: true,
+      fill: true,
+      fillOpacity: .8
+    }; // styles closed
+
         // Global vars
 
-        // $.getJSON("data/counties_median_rent_2015.json", function (data) {
-        //   // just need some outlines
-        //   L.geoJson(data, {
-        //     style: function (feature) {
-        //       return {
-        //         color: '#dddddd',
-        //         weight: 1,
-        //         fillOpacity: 1,
-        //         fillColor: '#2ca25f'
-        //       };
-        //     }
-        //   }).addTo(map);  // L.geoJson ends
-        // });
+    var layerInfo = {
+      tornadoLayer: {
+        lat: "BEGIN_LAT",
+        lng: "BEGIN_LNG",
+        color: '#cf2525'
+      },
+      funnelLayer: {
+        lat: "BEGIN_LAT",
+        lng: "BEGIN_LNG",
+        color: '#e6e22c'
+      }
+        }; // info closed
 
-        var commonStyles = {
-            stroke: true,
-            fill: true,
-            fillOpacity: .8,
-            radius: 2000,
+    var place = [layerInfo.lat,layerInfo.lng];
 
-        }; // styles closed
+    var geoJsonLayers = {};  // trying to make a json into a geoJSON
 
-        var dataLayer = L.geoJson(tornados, {
-            pointToLayer: function (feature, latlng) {
-                return L.circle(latlng, commonStyles);
-            }
-        }); // close datalayer
-        dataLayer.addTo(map);
+    for (var layer in layerInfo) {
 
-        //tornados.features[0].properties.CZ_NAME_STR
-        // drawMap(dataLayer);
+      geoJsonLayers[layer] = L.geoJson(tornados, {
 
-        function drawMap(dataLayer) {
+        pointToLayer: function (feature, place) {
+          return L.circleMarker(place, commonStyles);
+        },
+        // filter: function (feature) {
+        //   if (feature.properties.fuel_source[layerInfo[layer].source]) {
+        //     return feature;
+        //   }
+        // },
 
-            dataLayer.eachLayer(function (layer) {
+        style: function (feature) {
+          return {
+            color: layerInfo[layer].color,
+            fillColor: layerInfo[layer].color,
+            radius: 200
+          }
+        }
+      }).addTo(map);
+    } // for loop closed
 
-                var props = layer.feature.properties;
+    // var sourcesLabels = {
+    //   "Tornados": geoJsonLayers.tornadoLayer,
+    //   "Funnel Clouds": geoJsonLayers.funnelLayer
+    // } // labels closed
 
-                // define toolTipInfo
-                var content = `${props.CZ_NAME_STR}`;
+    // L.control.layers(null, sourcesLabels, {
+    //   collapsed: false
+    // }).addTo(map);
 
-                layer.bindTooltip(content);
-
-                layer.on('mouseover', function () {
-                    layer.setStyle({
-                        fillColor: 'yellow'
-                    });
-                });
-                layer.on('mouseout', function () {
-                    layer.setStyle({
-                        fillColor: 'green'
-                    });
-                });
-
-            }); // close each layer
-        }; // close drawMap
     </script>
 
 </body>
 
 </html>
+
+<!-- console.log(`layerInfo[gsLayer]: ${layerInfo[gsLayer].source} \n*******\n`)
+console.log(`geoJsonLayers[gsLayer]: ${geoJsonLayers[gsLayer]} \n*******\n`)
+console.log(`gsLayer: ${gsLayer} \n*******\n`)
+console.log(`layer: ${layer} \n*******\n`) -->
