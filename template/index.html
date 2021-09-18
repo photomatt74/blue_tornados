@@ -135,7 +135,7 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin=""></script>
-    <script src="data/ky_tornados_1961_2021.json">
+    <script src="data/ky_tornados_1961_2021.js">
     </script>
 
     <script>
@@ -174,7 +174,41 @@
       }
         }; // info closed
 
-    var place = [layerInfo.lat,layerInfo.lng];
+    // var place = [layerInfo.lat,layerInfo.lng];
+
+    //  Create empty layer group
+    let tornadoGroup = L.layerGroup();
+
+    //  Loop through the data and create a line for each valid feature
+    for (let t of tornados) {
+        
+        // Load coordinates and convert them to numbers with + operator
+        const cords = [
+            +t.BEGIN_LAT, +t.BEGIN_LON, +t.END_LAT, +t.END_LON
+        ]
+
+        // Test all four values to see if they are valid
+        const check = cords.every(cord => {
+            
+            // Returns true if all values are valid
+            return typeof(cord) === 'number' && !isNaN(cord) && cord !== 0;  
+        })
+        // If true, build the line and add it to the layergroup
+        if (check) {        
+            const polyline = L.polyline([[cords[0], cords[1]],[cords[2], cords[3]]], commonStyles)
+
+            //  Style and create popup content
+            // Create functions to draw legend, add interactivity, etc. because you have access to properties here
+
+            tornadoGroup.addLayer(polyline)     
+        } else {
+            console.log(t)
+        } 
+    }
+
+    tornadoGroup.addTo(map);
+
+    // tornadoGroup can now have events added to it
 
     var geoJsonLayers = {};  // trying to make a json into a geoJSON
 
