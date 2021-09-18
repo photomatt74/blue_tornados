@@ -176,6 +176,10 @@
 
     var place = [layerInfo.lat,layerInfo.lng];
 
+    for (let t of tornados) {
+        console.log(t);
+    }
+
     var geoJsonLayers = {};  // trying to make a json into a geoJSON
 
     for (var layer in layerInfo) {
