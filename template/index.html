@@ -43,7 +43,7 @@
             width: 80%;
             height: 740px;
             margin: 10px 10%;
-            background: whitesmoke;
+            background: rgb(54, 53, 53);
             border: 2px solid #dddedf;
         }
 
@@ -130,11 +130,13 @@
     <!-- Load scripts using Subresource Integrity (SRI) is a security feature 
       that enables browsers to verify that resources they fetch (from a CDN) 
       are delivered without unexpected manipulation. -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
-        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-        crossorigin=""></script>
+      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+      crossorigin=""></script>
+    <script src='https://unpkg.com/simple-statistics@7.6.0/dist/simple-statistics.min.js'>
+    </script>
     <script src="data/ky_tornados_1961_2021.js">
     </script>
 
@@ -189,15 +191,23 @@
             },
         }; // decade closed
 
-    //     var geoJsonLayers = {};
+        // var geoJsonLayers = {};
 
-    // for (var layer in decade) {
+ 
+        
     //   geoJsonLayers[layer] = L.geoJson(tornados, {
+    //     // coordsToLatLng: function (cords) {
+    //     //     return new L.LatLng(layer.BEGIN_LAT,layer.BEGIN_LON);
+    //     //     console.log(latlng);
+    //     // },
+    //     eachLayer: function (layer) {
+    //         latlng = [BEGIN_LAT,BEGIN_LON];
+    //     },
     //     pointToLayer: function (feature, latlng) {
-    //       return L.circleMarker(latlng, commonStyles);
+    //       return L.circle(latlng, commonStyles);
     //     },
     //     filter: function (feature) {
-    //       if ((start_date >= tornados.START_DATE) && (start_date <= tornadoes.END_DATE)) {
+    //       if ((decade[layer].start_date >= tornados.BEGIN_DATE) && (decade[layer].start_date <= tornadoes.END_DATE)) {
     //         return feature;
     //       }
     //     },
@@ -220,7 +230,8 @@
                 const cords = [
                     +t.BEGIN_LAT, +t.BEGIN_LON
                 ]
-                var tip = `${t.EVENT_TYPE}<br>${t.BEGIN_DATE}`;
+                var start_date = t.BEGIN_DATE
+                var tip = `<b>${t.EVENT_TYPE}<br>${start_date}`;
 
                 // Test all values to see if they are valid
                 const check = cords.every(cord => {
@@ -231,22 +242,20 @@
                 // If true, build the tornado groupline and add it to the layergroup
                 if (check) {
                     const mark = L.circle([cords[0], cords[1]], commonStyles).bindTooltip(tip)
-
-        
+                
                     // Create functions to draw legend, add interactivity, etc. because you have access to properties here
-
-
+                    
                     tornadoGroup.addLayer(mark);
                 } // close if 
-            } // close for
 
-            tornadoGroup.addTo(map);
+            } // close for
+    
+       
             drawMap(tornadoGroup);
 
         function drawMap(tornadoGroup) {
 
             tornadoGroup.eachLayer(function (layer) {
-
 
                 layer.on('mouseover', function () {
                     layer.setStyle(hotStyles);
@@ -266,14 +275,44 @@
                 // };
 
             }); // close each layer
+            tornadoGroup.addTo(map);
         }; // close drawMap
 
+        $.getJSON("data/us_states_20m.geojson", function (data) {
+
+          var stateLayer = L.geoJson(data, {
+            style: function (feature) {
+              return {
+                // Let's experiment with these colors shortly
+                // color: '#222222', // Gray
+                color: '#ffffff', // White
+                // Make line weight larger than the county outline
+                weight: 2,
+                fillOpacity: 0,
+                // This property allows us control interactivty of layer
+                interactive: false
+              };
+            },
+
+            // Filter for the correct state to use
+            filter: function (feature) {
+              if (feature.properties.NAME == "Kentucky") {
+                return feature;
+              }
+            }
+          });
+
+          // Add layer to map!
+          stateLayer.addTo(map)
+        });
+   
         // tornadoGroup can now have events added to it
 
 
         // var sourcesLabels = {
-        //   "Tornados": geoJsonLayers.tornadoLayer,
-        //   "Funnel Clouds": geoJsonLayers.funnelLayer
+        //   "1961-1981 Tornados": geoJsonLayers.first20Layer,
+        //   "1981-2001 Tornados": geoJsonLayers.second20Layer,
+        //   "2001-2021 Tornados": geoJsonLayers.third20Layer,
         // } // labels closed
 
         // L.control.layers(null, sourcesLabels, {
@@ -284,8 +323,3 @@
 </body>
 
 </html>
-
-<!-- console.log(`layerInfo[gsLayer]: ${layerInfo[gsLayer].source} \n*******\n`)
-console.log(`geoJsonLayers[gsLayer]: ${geoJsonLayers[gsLayer]} \n*******\n`)
-console.log(`gsLayer: ${gsLayer} \n*******\n`)
-console.log(`layer: ${layer} \n*******\n`) -->
