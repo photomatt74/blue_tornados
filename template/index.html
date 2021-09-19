@@ -177,21 +177,21 @@
             first20Layer: {
                 start_date: "01/01/1961",
                 end_date: "12/31/1980",
-                color: '#cf2525'
+                color: '#cf2525',
             },
             second20Layer: {
                 start_date: "01/01/1981",
-                end_date: "12/31/2001",
-                color: '#e6e22c'
+                end_date: "12/31/2000",
+                color: '#e6e'
             },
             third20Layer: {
-                start_date: "01/01/1981",
-                end_date: "12/31/2001",
+                start_date: "01/01/2001",
+                end_date: "12/31/2021",
                 color: '#e6e22c'
             },
         }; // decade closed
 
-        // var geoJsonLayers = {};
+        var markLayers = {};
 
  
         
@@ -220,8 +220,11 @@
     //   }).addTo(map);
     // } // for loop closed
 
-            //  Create empty layer group
-            let tornadoGroup = L.layerGroup();
+            //  Create empty layer groups
+            for (const d in decade) {
+                markLayers[d] = L.layerGroup()
+            }
+            
 
             //  Loop through the data and create a line for each valid feature
             for (let t of tornados) {
@@ -230,8 +233,6 @@
                 const cords = [
                     +t.BEGIN_LAT, +t.BEGIN_LON
                 ]
-                var start_date = t.BEGIN_DATE
-                var tip = `<b>${t.EVENT_TYPE}<br>${start_date}`;
 
                 // Test all values to see if they are valid
                 const check = cords.every(cord => {
@@ -241,42 +242,80 @@
                 })
                 // If true, build the tornado groupline and add it to the layergroup
                 if (check) {
-                    const mark = L.circle([cords[0], cords[1]], commonStyles).bindTooltip(tip)
-                
-                    // Create functions to draw legend, add interactivity, etc. because you have access to properties here
-                    
-                    tornadoGroup.addLayer(mark);
+
+                    drawMark (cords, t)
+
                 } // close if 
 
             } // close for
     
        
-            drawMap(tornadoGroup);
+            // drawMap(tornadoGroup);
 
-        function drawMap(tornadoGroup) {
+        function drawMark (cords, t) {
+            var start_date = t.BEGIN_DATE
+            var tip = `<b>${t.EVENT_TYPE}<br>${start_date}`;
+ 
+            const mark = L.circle([cords[0], cords[1]], commonStyles).bindTooltip(tip)
+        
+            // Create functions to draw legend, add interactivity, etc. because you have access to properties here
 
-            tornadoGroup.eachLayer(function (layer) {
+            const torDecade = start_date.slice(6,);
+            
+            for (let d in decade) {
+                const x = decade[d].start_date.slice(6,);
+                const y = decade[d].end_date.slice(6,);
+                
+                if (torDecade >= x && torDecade <= y) {
 
-                layer.on('mouseover', function () {
-                    layer.setStyle(hotStyles);
-                });
-                layer.on('mouseout', function () {
-                    layer.setStyle(commonStyles);
-                });
-                // if (L.Browser.mobile) {
-                //   // if true use popup
-                //   layer.bindPopup(toolTipInfo);
-                // } else {
-                //   // if false use tooltip
-                //   layer.bindTooltip(toolTipInfo, 
-                // {sticky: true,
-                //   maxHeight: 10,
-                //   offset: [15,0] });
-                // };
+                    mark.setStyle({
+                        color: decade[d].color
+                    });
 
-            }); // close each layer
-            tornadoGroup.addTo(map);
-        }; // close drawMap
+                    mark.on('mouseover', function () {
+                        mark.setStyle(hotStyles);
+                        document.querySelector('footer').innerHTML = `<p>${t.EVENT_NARRATIVE}</p>`; 
+                        // example event narrative on page, but might be better mouseclick event and in formatted div
+                    });
+
+                    mark.on('mouseout', function () {
+                        mark.setStyle({
+                            color: decade[d].color
+                        });
+                    });
+
+                    markLayers[d].addLayer(mark).addTo(map);
+
+                }
+            }
+        }
+
+        console.log(markLayers);
+
+        // function drawMap(tornadoGroup) {
+
+        //     tornadoGroup.eachLayer(function (layer) {
+
+        //         layer.on('mouseover', function () {
+        //             layer.setStyle(hotStyles);
+        //         });
+        //         layer.on('mouseout', function () {
+        //             layer.setStyle(commonStyles);
+        //         });
+        //         // if (L.Browser.mobile) {
+        //         //   // if true use popup
+        //         //   layer.bindPopup(toolTipInfo);
+        //         // } else {
+        //         //   // if false use tooltip
+        //         //   layer.bindTooltip(toolTipInfo, 
+        //         // {sticky: true,
+        //         //   maxHeight: 10,
+        //         //   offset: [15,0] });
+        //         // };
+
+        //     }); // close each layer
+        //     tornadoGroup.addTo(map);
+        // }; // close drawMap
 
         $.getJSON("data/us_states_20m.geojson", function (data) {
 
