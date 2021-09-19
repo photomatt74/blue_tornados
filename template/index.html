@@ -141,7 +141,7 @@
     <script>
         var map = L.map('map', {
             center: [37.8, -85.8], // centered in Kentucky
-            zoom: 7
+            zoom: 8
         });
 
         var tiles = L.tileLayer(
@@ -171,72 +171,92 @@
 
         // Global vars
 
-        var layerInfo = {
-            tornadoLayer: {
-                lat: "BEGIN_LAT",
-                lng: "BEGIN_LNG",
+        var decade = {
+            first20Layer: {
+                start_date: "01/01/1961",
+                end_date: "12/31/1980",
                 color: '#cf2525'
             },
-            funnelLayer: {
-                lat: "BEGIN_LAT",
-                lng: "BEGIN_LNG",
+            second20Layer: {
+                start_date: "01/01/1981",
+                end_date: "12/31/2001",
                 color: '#e6e22c'
-            }
-        }; // info closed
+            },
+            third20Layer: {
+                start_date: "01/01/1981",
+                end_date: "12/31/2001",
+                color: '#e6e22c'
+            },
+        }; // decade closed
 
-        // var place = [layerInfo.lat,layerInfo.lng];
+    //     var geoJsonLayers = {};
 
-        //  Create empty layer group
-        let tornadoGroup = L.layerGroup();
+    // for (var layer in decade) {
+    //   geoJsonLayers[layer] = L.geoJson(tornados, {
+    //     pointToLayer: function (feature, latlng) {
+    //       return L.circleMarker(latlng, commonStyles);
+    //     },
+    //     filter: function (feature) {
+    //       if (start_date >= tornados.START_DATE) && (start_date <= tornadoes.END_DATE) {
+    //         return feature;
+    //       }
+    //     },
+    //     style: function (feature) {
+    //       return {
+    //         color: decade[layer].color,
+    //         radius: 200
+    //       }
+    //     }
+    //   }).addTo(map);
+    // } // for loop closed
 
-        //  Loop through the data and create a line for each valid feature
-        for (let t of tornados) {
+            //  Create empty layer group
+            let tornadoGroup = L.layerGroup();
 
-            // Load coordinates and convert them to numbers with + operator
-            const cords = [
-                +t.BEGIN_LAT, +t.BEGIN_LON, +t.END_LAT, +t.END_LON
-            ]
-            var tip = `${t.EVENT_TYPE}<br>${t.BEGIN_DATE}`;
-            // Test all four values to see if they are valid
-            const check = cords.every(cord => {
+            //  Loop through the data and create a line for each valid feature
+            for (let t of tornados) {
 
-                // Returns true if all values are valid
-                return typeof (cord) === 'number' && !isNaN(cord) && cord !== 0;
-            })
-            // If true, build the line and add it to the layergroup
-            if (check) {
-                const polyline = L.polyline([
-                    [cords[0], cords[1]],
-                    [cords[2], cords[3]]
-                ], commonStyles).bindTooltip(tip)
+                // Load coordinates and convert them to numbers with + operator
+                const cords = [
+                    +t.BEGIN_LAT, +t.BEGIN_LON, +t.END_LAT, +t.END_LON
+                ]
+                var tip = `${t.EVENT_TYPE}<br>${t.BEGIN_DATE}`;
+                // Test all four values to see if they are valid
+                const check = cords.every(cord => {
 
-                // define toolTipInfo
-                // var toolTipInfo =`me`;
-                //     console.log(t.CZ_NAME_STR)
-                //  Style and create popup content
-                // Create functions to draw legend, add interactivity, etc. because you have access to properties here
-                // tornadoGroup.bindTooltip(t.CZ_NAME_STR);
+                    // Returns true if all values are valid
+                    return typeof (cord) === 'number' && !isNaN(cord) && cord !== 0;
+                })
+                // If true, build the tornado groupline and add it to the layergroup
+                if (check) {
+                    const polyline = L.polyline([
+                        [cords[0], cords[1]],
+                        [cords[2], cords[3]]
+                    ], commonStyles).bindTooltip(tip)
 
-                tornadoGroup.addLayer(polyline);
+        
+                    // Create functions to draw legend, add interactivity, etc. because you have access to properties here
 
-            } else {
-                if ((typeof (cords[0]) === 'number' && !isNaN(cords[0]) && cords[0] !== 0) && (typeof (cords[1]) ===
-                        'number' && !isNaN(cords[1]) && cords[1] !== 0)) {
-                    var place = [cords[0], cords[1]];
-                    console.log(place);
-                    const dot = L.circle(place, commonStyles).bindTooltip(tip)
-                    tornadoGroup.addLayer(dot);
+
+                    tornadoGroup.addLayer(polyline);
+
+                } else { // funnel clouds only have a begining point so this adds single dots
+                    if ((typeof (cords[0]) === 'number' && !isNaN(cords[0]) && cords[0] !== 0) && (typeof (cords[1]) === 'number' && !isNaN(cords[1]) && cords[1] !== 0)) {
+                        var place = [cords[0], cords[1]];
+                        const dot = L.circle(place, commonStyles).bindTooltip(tip)
+                        tornadoGroup.addLayer(dot);
+                    }
+                    // console.log(place)
                 }
-                // console.log(place)
-            }
-        }
+            } // close for
 
-        tornadoGroup.addTo(map);
-        drawMap(tornadoGroup);
+            tornadoGroup.addTo(map);
+            drawMap(tornadoGroup);
 
         function drawMap(tornadoGroup) {
 
             tornadoGroup.eachLayer(function (layer) {
+
 
                 layer.on('mouseover', function () {
                     layer.setStyle(hotStyles);
@@ -260,30 +280,6 @@
 
         // tornadoGroup can now have events added to it
 
-        // var geoJsonLayers = {};  // trying to make a json into a geoJSON
-
-        // for (var layer in layerInfo) {
-
-        //   geoJsonLayers[layer] = L.geoJson(tornados, {
-
-        //     pointToLayer: function (feature, place) {
-        //       return L.circleMarker(place, commonStyles);
-        //     },
-        //     // filter: function (feature) {
-        //     //   if (feature.properties.fuel_source[layerInfo[layer].source]) {
-        //     //     return feature;
-        //     //   }
-        //     // },
-
-        //     style: function (feature) {
-        //       return {
-        //         color: layerInfo[layer].color,
-        //         fillColor: layerInfo[layer].color,
-        //         radius: 200
-        //       }
-        //     }
-        //   }).addTo(map);
-        // } // for loop closed
 
         // var sourcesLabels = {
         //   "Tornados": geoJsonLayers.tornadoLayer,
