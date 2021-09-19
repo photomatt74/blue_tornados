@@ -157,7 +157,7 @@
             stroke: true,
             fill: true,
             fillOpacity: .8,
-            radius: 200,
+            radius: 2000,
             color: '#1F78B4'
         }; // styles closed
 
@@ -165,7 +165,7 @@
             stroke: true,
             fill: true,
             fillOpacity: 1,
-            radius: 200,
+            radius: 2000,
             color: '#cf2525'
         }; // styles closed
 
@@ -197,14 +197,14 @@
     //       return L.circleMarker(latlng, commonStyles);
     //     },
     //     filter: function (feature) {
-    //       if (start_date >= tornados.START_DATE) && (start_date <= tornadoes.END_DATE) {
+    //       if ((start_date >= tornados.START_DATE) && (start_date <= tornadoes.END_DATE)) {
     //         return feature;
     //       }
     //     },
     //     style: function (feature) {
     //       return {
     //         color: decade[layer].color,
-    //         radius: 200
+    //         radius: 20
     //       }
     //     }
     //   }).addTo(map);
@@ -218,10 +218,11 @@
 
                 // Load coordinates and convert them to numbers with + operator
                 const cords = [
-                    +t.BEGIN_LAT, +t.BEGIN_LON, +t.END_LAT, +t.END_LON
+                    +t.BEGIN_LAT, +t.BEGIN_LON
                 ]
                 var tip = `${t.EVENT_TYPE}<br>${t.BEGIN_DATE}`;
-                // Test all four values to see if they are valid
+
+                // Test all values to see if they are valid
                 const check = cords.every(cord => {
 
                     // Returns true if all values are valid
@@ -229,25 +230,14 @@
                 })
                 // If true, build the tornado groupline and add it to the layergroup
                 if (check) {
-                    const polyline = L.polyline([
-                        [cords[0], cords[1]],
-                        [cords[2], cords[3]]
-                    ], commonStyles).bindTooltip(tip)
+                    const mark = L.circle([cords[0], cords[1]], commonStyles).bindTooltip(tip)
 
         
                     // Create functions to draw legend, add interactivity, etc. because you have access to properties here
 
 
-                    tornadoGroup.addLayer(polyline);
-
-                } else { // funnel clouds only have a begining point so this adds single dots
-                    if ((typeof (cords[0]) === 'number' && !isNaN(cords[0]) && cords[0] !== 0) && (typeof (cords[1]) === 'number' && !isNaN(cords[1]) && cords[1] !== 0)) {
-                        var place = [cords[0], cords[1]];
-                        const dot = L.circle(place, commonStyles).bindTooltip(tip)
-                        tornadoGroup.addLayer(dot);
-                    }
-                    // console.log(place)
-                }
+                    tornadoGroup.addLayer(mark);
+                } // close if 
             } // close for
 
             tornadoGroup.addTo(map);
