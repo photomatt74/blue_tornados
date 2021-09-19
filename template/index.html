@@ -255,7 +255,7 @@
         function drawMark (cords, t) {
             var start_date = t.BEGIN_DATE
             var tip = `<b>${t.EVENT_TYPE}<br>${start_date}`;
-                
+ 
             const mark = L.circle([cords[0], cords[1]], commonStyles).bindTooltip(tip)
         
             // Create functions to draw legend, add interactivity, etc. because you have access to properties here
@@ -274,6 +274,8 @@
 
                     mark.on('mouseover', function () {
                         mark.setStyle(hotStyles);
+                        document.querySelector('footer').innerHTML = `<p>${t.EVENT_NARRATIVE}</p>`; 
+                        // example event narrative on page, but might be better mouseclick event and in formatted div
                     });
 
                     mark.on('mouseout', function () {
