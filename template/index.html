@@ -121,7 +121,7 @@
     <script>
         var map = L.map('map', {
             center: [37.8, -85.8], // centered in Kentucky
-            zoom: 8,
+            zoom: 7,
             zoomControl: false
         });
 
@@ -276,7 +276,7 @@
 
             // Add layer to map!
             stateLayer.addTo(map)
-            map.fitBounds(group.getBounds());
+            map.fitBounds(stateLayer.getBounds());
         });
 
 
