@@ -3,7 +3,7 @@
 
 <head>
     <meta charset=utf-8 />
-    <title>Draft</title>
+    <title>Tornados in Kentucky</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
@@ -61,45 +61,17 @@
             color: #001323;
         }
 
-        .legend {
-            padding: 6px 8px;
-            font-size: 1em;
-            /* Use transparency to blend elements. */
-            border: 2px solid rgba(145, 168, 153, 0.2);
-            background: rgba(233, 232, 232, 0.9);
-            color: rgba(0, 0, 0, 0.8);
-            border-radius: 5px;
-        }
-
-        .legend h3 {
-            font-size: 1.3em;
-            font-weight: bolder;
-            color: rgb(4, 4, 4);
-            /* Light */
-            margin: 0 0 10px 0;
-        }
-
-        .legend span {
-            width: 20px;
-            height: 20px;
-            float: left;
-            margin: 0 10px 4px 0;
-        }
-
-        .legend label {
-            font-size: 1em;
-        }
-
-        .legend label:after {
-            content: ' ';
-            display: block;
-            clear: both;
-        }
-
         .leaflet-bar a {
             /* Override the default style for Leaflet's zoom  */
             background: rgba(100, 100, 100, 0.9);
             color: rgba(244, 244, 244, 0.8);
+        }
+
+        .leaflet-control-layers-expanded {
+            width: 500px !important;
+            padding: 2px;
+            margin: 0 auto;
+            font-size: 1.5em;
         }
 
         footer {
@@ -117,24 +89,30 @@
 <body>
     <header>
         <h1>Kentucky Tornados:</h1>
-        <h2>It's Weird Weather</h2>
+        <h2>The wind is picking up</h2>
     </header>
 
     <div id='map'></div>
+
     <footer>
         <p>Map authored by Matt Barton</p>
-        <p>Are we having more tornados in Kentucky? This map will show tornados in Kentucky by location and decade.
+        <p>According to the <a target="_blank" href="https://www.ncdc.noaa.gov/stormevents/">National Centers for Environmental Information Storm Events Database</a>, the number of tornados and funnel clouds in Kentucky has increased dramatically in the last 20 years. Between 1961-1981, there were 255 reported tornados. Between 1981 and 2001, the database recorded 250 tornados and 9 funnel clouds. But tornadic activity really increased between 2001 and 2021, with 611 tornados and 203 funnel clouds reported in the state of Kentucky.
         </p>
+        <ul>
+            <li>See my projects on GitHub: <a href="https://github.com/photomatt74"> photomatt74 </a></li>
+            <li>Follow me on Twitter: <a href="https://twitter.com/mrmattbarton">@mrmattbarton</a></li>
+            <li>Visit my <a href='https://newmapsplus.uky.edu/explore-new-maps'>mapping portfolio</a></li>
+          </ul>
     </footer>
 
     <!-- Load scripts using Subresource Integrity (SRI) is a security feature 
       that enables browsers to verify that resources they fetch (from a CDN) 
       are delivered without unexpected manipulation. -->
-      <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
-      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-      crossorigin=""></script>
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
     <script src='https://unpkg.com/simple-statistics@7.6.0/dist/simple-statistics.min.js'>
     </script>
     <script src="data/ky_tornados_1961_2021.js">
@@ -143,7 +121,8 @@
     <script>
         var map = L.map('map', {
             center: [37.8, -85.8], // centered in Kentucky
-            zoom: 8
+            zoom: 7.5,
+            zoomControl: false
         });
 
         var tiles = L.tileLayer(
@@ -184,91 +163,68 @@
                 start_date: "01/01/1981",
                 end_date: "12/31/2000",
                 color: '#2C6CBF',
-                title: "1981-2001 Tornados"
+                title: "1981-2001 Tornados & Funnel Clouds"
             },
             third20Layer: {
                 start_date: "01/01/2001",
                 end_date: "12/31/2021",
                 color: '#D92211',
-                title: "2001-2021 Tornados"
+                title: "2001-2021 Tornados & Funnel Clouds"
             },
         }; // decade closed
 
+
+
+
         var markLayers = {};
 
- 
-        
-    //   geoJsonLayers[layer] = L.geoJson(tornados, {
-    //     // coordsToLatLng: function (cords) {
-    //     //     return new L.LatLng(layer.BEGIN_LAT,layer.BEGIN_LON);
-    //     //     console.log(latlng);
-    //     // },
-    //     eachLayer: function (layer) {
-    //         latlng = [BEGIN_LAT,BEGIN_LON];
-    //     },
-    //     pointToLayer: function (feature, latlng) {
-    //       return L.circle(latlng, commonStyles);
-    //     },
-    //     filter: function (feature) {
-    //       if ((decade[layer].start_date >= tornados.BEGIN_DATE) && (decade[layer].start_date <= tornadoes.END_DATE)) {
-    //         return feature;
-    //       }
-    //     },
-    //     style: function (feature) {
-    //       return {
-    //         color: decade[layer].color,
-    //         radius: 20
-    //       }
-    //     }
-    //   }).addTo(map);
-    // } // for loop closed
 
-            //  Create empty layer groups
-            for (const d in decade) {
-                markLayers[d] = L.layerGroup()
-            }
-            
+        //  Create empty layer groups
+        for (const d in decade) {
+            markLayers[d] = L.layerGroup()
+        }
 
-            //  Loop through the data and create a line for each valid feature
-            for (let t of tornados) {
 
-                // Load coordinates and convert them to numbers with + operator
-                const cords = [
-                    +t.BEGIN_LAT, +t.BEGIN_LON
-                ]
+        //  Loop through the data and create a line for each valid feature
+        for (let t of tornados) {
 
-                // Test all values to see if they are valid
-                const check = cords.every(cord => {
+            // Load coordinates and convert them to numbers with + operator
+            const cords = [
+                +t.BEGIN_LAT, +t.BEGIN_LON
+            ]
 
-                    // Returns true if all values are valid
-                    return typeof (cord) === 'number' && !isNaN(cord) && cord !== 0;
-                })
-                // If true, build the tornado groupline and add it to the layergroup
-                if (check) {
+            // Test all values to see if they are valid
+            const check = cords.every(cord => {
 
-                    drawMark (cords, t)
+                // Returns true if all values are valid
+                return typeof (cord) === 'number' && !isNaN(cord) && cord !== 0;
+            })
+            // If true, build the tornado groupline and add it to the layergroup
+            if (check) {
 
-                } // close if 
+                drawMark(cords, t)
 
-            } // close for
-    
-       
-            // drawMap(tornadoGroup);
+            } // close if 
 
-        function drawMark (cords, t) {
+        } // close for
+
+
+        // drawMap(tornadoGroup);
+
+        function drawMark(cords, t) {
             var start_date = t.BEGIN_DATE
             var tip = `<b>${t.EVENT_TYPE}<br>${start_date}`;
- 
+
             const mark = L.circle([cords[0], cords[1]], commonStyles).bindTooltip(tip)
-        
+
             // Create functions to draw legend, add interactivity, etc. because you have access to properties here
 
-            const torDecade = start_date.slice(6,);
-            
+            const torDecade = start_date.slice(6, );
+
             for (let d in decade) {
-                const x = decade[d].start_date.slice(6,);
-                const y = decade[d].end_date.slice(6,);
-                
+                const x = decade[d].start_date.slice(6, );
+                const y = decade[d].end_date.slice(6, );
+
                 if (torDecade >= x && torDecade <= y) {
 
                     mark.setStyle({
@@ -277,8 +233,8 @@
 
                     mark.on('mouseover', function () {
                         mark.setStyle(hotStyles);
-                        document.querySelector('footer').innerHTML = `<p>${t.EVENT_NARRATIVE}</p>`; 
-                        // example event narrative on page, but might be better mouseclick event and in formatted div
+                        // document.querySelector('footer').innerHTML = `<p>${t.EVENT_NARRATIVE}</p>`;
+                        // I was considering adding this to an info box on the map but decided it took up too much space
                     });
 
                     mark.on('mouseout', function () {
@@ -293,79 +249,51 @@
             }
         }
 
-        console.log(markLayers);
-
-        // function drawMap(tornadoGroup) {
-
-        //     tornadoGroup.eachLayer(function (layer) {
-
-        //         layer.on('mouseover', function () {
-        //             layer.setStyle(hotStyles);
-        //         });
-        //         layer.on('mouseout', function () {
-        //             layer.setStyle(commonStyles);
-        //         });
-        //         // if (L.Browser.mobile) {
-        //         //   // if true use popup
-        //         //   layer.bindPopup(toolTipInfo);
-        //         // } else {
-        //         //   // if false use tooltip
-        //         //   layer.bindTooltip(toolTipInfo, 
-        //         // {sticky: true,
-        //         //   maxHeight: 10,
-        //         //   offset: [15,0] });
-        //         // };
-
-        //     }); // close each layer
-        //     tornadoGroup.addTo(map);
-        // }; // close drawMap
 
         $.getJSON("data/us_states_20m.geojson", function (data) {
+// Why would I use jquery to grab the state file here when I used the old way to grab data earlier?  
+// Obviously I wanted to showcase the multiple concepts I learned in this class and not because I was code sloppy.   
 
-          var stateLayer = L.geoJson(data, {
-            style: function (feature) {
-              return {
-                // Let's experiment with these colors shortly
-                // color: '#222222', // Gray
-                color: '#ffffff', // White
-                // Make line weight larger than the county outline
-                weight: 2,
-                fillOpacity: 0,
-                // This property allows us control interactivty of layer
-                interactive: false
-              };
-            },
+            var stateLayer = L.geoJson(data, {
+                style: function (feature) {
+                    return {
+                        color: '#ffffff', // White
+                        // Make line weight larger than the county outline
+                        weight: 2,
+                        fillOpacity: 0,
+                        // This property allows us control interactivty of layer
+                        interactive: false
+                    };
+                },
 
-            // Filter for the correct state to use
-            filter: function (feature) {
-              if (feature.properties.NAME == "Kentucky") {
-                return feature;
-              }
-            }
-          });
+                // Filter for the correct state to use
+                filter: function (feature) {
+                    if (feature.properties.NAME == "Kentucky") {
+                        return feature;
+                    }
+                }
+            });
 
-          // Add layer to map!
-          stateLayer.addTo(map)
+            // Add layer to map!
+            stateLayer.addTo(map)
+            map.fitBounds(group.getBounds());
         });
-   
-        // tornadoGroup can now have events added to it
+
 
         // yellow #F2C849, blue #2C6CBF, orange #F26A1B, red #D92211, green #02AB3D
-        // var sourcesLabels = {
-        // "<b style='color: #02AB3D '>1961-1981 Tornados": markLayers.first20Layer,
-        // "<b style='color: #2C6CBF '>1981-2001 Tornados": markLayers.second20Layer,
-        // "<b style='color: #D92211 '>2001-2021 Tornados": markLayers.third20Layer,
-        // } // labels closed
+
 
         let sLabels = {}
- 
-    for (let label in decade) {
-      const props = decade[label]
-      sLabels[`<b style='color:${props.color}'>${props.title}</b>`] = markLayers[label]
-    }
+
+        for (let label in decade) {
+            const props = decade[label]
+            ttotal = markLayers[label].getLayers().length;
+            sLabels[`<b style='color:${props.color}'>${props.title} - ${ttotal}`] = markLayers[label]
+        }
 
         L.control.layers(null, sLabels, {
-          collapsed: false
+            collapsed: false,
+            position: 'topleft'
         }).addTo(map);
     </script>
 
