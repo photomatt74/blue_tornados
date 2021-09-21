@@ -276,9 +276,10 @@
 
             // Add layer to map!
             stateLayer.addTo(map)
-            // map.fitBounds(circle.getBounds());
-            var bounds = L.latLngBounds(markerArray);
-            map.fitBounds(bounds);//works!
+
+            map.fitBounds(stateLayer.getBounds(), {
+			padding: [50, 50]
+		});
         });
 
 
