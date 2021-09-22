@@ -1,7 +1,7 @@
 {
     "title": "Kentucky Tornados",
     "info": "Map that displays tornado data from the last 60 years",
-    "coordinates": [38, -84.5],
+    "coordinates": [37.8, -85.8],
     "author": "Matt Barton",
     "link": "https://photomatt74.github.io/blue_tornados/"
 
