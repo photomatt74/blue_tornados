@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
         integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
         crossorigin="" />
-    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 
     <style>
         body {
@@ -226,16 +226,21 @@
                 const x = decade[d].start_date.slice(6, );
                 const y = decade[d].end_date.slice(6, )
 
+                // So I tried to size the markers by the F Scale but it doesn't seem to work correctly. After 2007, F Scale changed to EF Scale
+
                 if (torDecade >= x && torDecade <= y) {
                     console.log(x);
                     if (x <= 2006) {
+                        var fixD = parseFloat(t.TOR_F_SCALE.slice(1,2))
+                        // console.log(fixD);
+                    } else { (x >= 2007) 
                         var fixD = parseFloat(t.TOR_F_SCALE.slice(2,3))
-                    } else {
-                        var fixD = parseFloat(t.TOR_F_SCALE.slice(3,4)) 
-                       }   console.log(fixD);
-                            mark.setStyle({
+                    //    }   console.log(fixD);
+                    } 
+                    console.log(fixD);
+                    mark.setStyle({
                         color: decade[d].color,
-                        radius: fixD
+                        radius: fixD * 5
                     });
 
                     mark.on('mouseover', function () {
@@ -249,7 +254,7 @@
                     mark.on('mouseout', function () {
                         mark.setStyle({
                             color: decade[d].color,
-                            radius: fixD
+                            radius: fixD * 5
                         });
                     });
 
