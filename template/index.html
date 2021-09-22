@@ -138,7 +138,7 @@
             stroke: true,
             fill: true,
             fillOpacity: .8,
-            radius: 2000,
+            // radius: 2000,
             color: '#1F78B4'
         }; // styles closed
 
@@ -146,7 +146,7 @@
             stroke: true,
             fill: true,
             fillOpacity: 1,
-            radius: 2000,
+            // radius: 2000,
             color: '#F2C849'
         }; // styles closed
 
@@ -213,33 +213,43 @@
 
         function drawMark(cords, t) {
             var start_date = t.BEGIN_DATE
-            var tip = `<b>${t.EVENT_TYPE}<br>${start_date}`;
+            var tip = `<b>${t.EVENT_TYPE}<br>${start_date}<br>${t.TOR_F_SCALE}`;
 
-            const mark = L.circle([cords[0], cords[1]], commonStyles).bindTooltip(tip)
+            const mark = L.circleMarker([cords[0], cords[1]], commonStyles).bindTooltip(tip)
 
             // Create functions to draw legend, add interactivity, etc. because you have access to properties here
+                // STATE_ABBR: "KY" TOR_F_SCALE: "F2" TOR_LENGTH: "22.1"
 
             const torDecade = start_date.slice(6, );
 
             for (let d in decade) {
                 const x = decade[d].start_date.slice(6, );
-                const y = decade[d].end_date.slice(6, );
+                const y = decade[d].end_date.slice(6, )
 
                 if (torDecade >= x && torDecade <= y) {
-
-                    mark.setStyle({
-                        color: decade[d].color
+                    console.log(x);
+                    if (x <= 2006) {
+                        var fixD = parseFloat(t.TOR_F_SCALE.slice(2,3))
+                    } else {
+                        var fixD = parseFloat(t.TOR_F_SCALE.slice(3,4)) 
+                       }   console.log(fixD);
+                            mark.setStyle({
+                        color: decade[d].color,
+                        radius: fixD
                     });
 
                     mark.on('mouseover', function () {
                         mark.setStyle(hotStyles);
+        
+
                         // document.querySelector('footer').innerHTML = `<p>${t.EVENT_NARRATIVE}</p>`;
                         // I was considering adding this to an info box on the map but decided it took up too much space
                     });
 
                     mark.on('mouseout', function () {
                         mark.setStyle({
-                            color: decade[d].color
+                            color: decade[d].color,
+                            radius: fixD
                         });
                     });
 
@@ -282,7 +292,19 @@
 		});
         });
 
+        // function fixScale(v,x) {
+        //     if (x < 02/07/2007) {
+        //         v = parseFloat((t.TOR_F_SCALE.slice(1,2)))
+        //     } else {
+        //         v = parseFloat((t.TOR_F_SCALE.slice(2,3)))
+        //     }
+        //     console.log(v);
+        // };
 
+        function getRadius(val) {
+         var radius = Math.sqrt(val / Math.PI);
+            return radius * .8;
+         };
         // yellow #F2C849, blue #2C6CBF, orange #F26A1B, red #D92211, green #02AB3D
 
 
