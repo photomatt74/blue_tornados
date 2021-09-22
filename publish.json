@@ -1,0 +1,8 @@
+{
+    "title": "Kentucky Tornados",
+    "info": "Map that displays tornado data from the last 60 years",
+    "coordinates": [38, -84.5],
+    "author": "Matt Barton",
+    "link": "https://newmapsplus.github.io/projects/"
+
+}
