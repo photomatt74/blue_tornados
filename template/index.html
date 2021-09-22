@@ -133,21 +133,24 @@
             });
         tiles.addTo(map);
 
+        // Project colors 
+        // yellow #F2C849, blue #2C6CBF, orange #F26A1B, red #D92211, green #02AB3D
+
         // commonStyles 
         var commonStyles = {
             stroke: true,
             fill: true,
             fillOpacity: .8,
-            // radius: 2000,
-            color: '#1F78B4'
+            color: '#1F78B4',
+            offset: [15,0]
         }; // styles closed
 
         var hotStyles = {
             stroke: true,
             fill: true,
             fillOpacity: 1,
-            // radius: 2000,
-            color: '#F2C849'
+            color: '#F2C849',
+            offset: [15,0]
         }; // styles closed
 
         // Global vars
@@ -163,21 +166,18 @@
                 start_date: "01/01/1981",
                 end_date: "12/31/2000",
                 color: '#2C6CBF',
-                title: "1981-2001 Tornados & Funnel Clouds"
+                title: "1982-2001 Tornados & Funnel Clouds"
             },
             third20Layer: {
                 start_date: "01/01/2001",
                 end_date: "12/31/2021",
                 color: '#D92211',
-                title: "2001-2021 Tornados & Funnel Clouds"
+                title: "2002-2021 Tornados & Funnel Clouds"
             },
         }; // decade closed
 
 
-
-
         var markLayers = {};
-
 
         //  Create empty layer groups
         for (const d in decade) {
@@ -207,9 +207,6 @@
             } // close if 
 
         } // close for
- 
-
-        // drawMap(tornadoGroup);
 
         function drawMark(cords, t) {
             var start_date = t.BEGIN_DATE
@@ -218,29 +215,35 @@
             const mark = L.circleMarker([cords[0], cords[1]], commonStyles).bindTooltip(tip)
 
             // Create functions to draw legend, add interactivity, etc. because you have access to properties here
-                // STATE_ABBR: "KY" TOR_F_SCALE: "F2" TOR_LENGTH: "22.1"
 
             const torDecade = start_date.slice(6, );
+
+            // slice the data into 3 groups of 20 years
 
             for (let d in decade) {
                 const x = decade[d].start_date.slice(6, );
                 const y = decade[d].end_date.slice(6, )
 
-                // So I tried to size the markers by the F Scale but it doesn't seem to work correctly. After 2007, F Scale changed to EF Scale
-
                 if (torDecade >= x && torDecade <= y) {
                     console.log(x);
-                    if (x <= 2006) {
-                        var fixD = parseFloat(t.TOR_F_SCALE.slice(1,2))
-                        // console.log(fixD);
-                    } else { (x >= 2007) 
-                        var fixD = parseFloat(t.TOR_F_SCALE.slice(2,3))
-                    //    }   console.log(fixD);
-                    } 
-                    console.log(fixD);
+
+                    // Adjusting the size of marker based on F/EF Scale
+
+                    if (fixD = true) {
+                        if (x <= 2006) {
+                            var fixD = parseFloat(t.TOR_F_SCALE.slice(1,2))
+                            // console.log(fixD);
+                        } else { (x >= 2007) 
+                            var fixD = parseFloat(t.TOR_F_SCALE.slice(2,3))
+                            // console.log(fixD);
+                        } 
+                       } else {  
+                            fixD = 0; } 
+                        
                     mark.setStyle({
                         color: decade[d].color,
-                        radius: fixD * 5
+                        radius: (fixD + 1) * 5,
+                        offset: [20,1]
                     });
 
                     mark.on('mouseover', function () {
@@ -254,7 +257,8 @@
                     mark.on('mouseout', function () {
                         mark.setStyle({
                             color: decade[d].color,
-                            radius: fixD * 5
+                            radius: (fixD + 1) * 5,
+                            offset: [20,1]
                         });
                     });
 
@@ -265,9 +269,7 @@
         }
 
 
-        $.getJSON("data/us_states_20m.geojson", function (data) {
-// Why would I use jquery to grab the state file here when I used the old way to grab data earlier?  
-// Obviously I wanted to showcase the multiple concepts I learned in this class and not because I was code sloppy.   
+        $.getJSON("data/us_states_20m.geojson", function (data) { 
 
             var stateLayer = L.geoJson(data, {
                 style: function (feature) {
@@ -297,21 +299,7 @@
 		});
         });
 
-        // function fixScale(v,x) {
-        //     if (x < 02/07/2007) {
-        //         v = parseFloat((t.TOR_F_SCALE.slice(1,2)))
-        //     } else {
-        //         v = parseFloat((t.TOR_F_SCALE.slice(2,3)))
-        //     }
-        //     console.log(v);
-        // };
-
-        function getRadius(val) {
-         var radius = Math.sqrt(val / Math.PI);
-            return radius * .8;
-         };
-        // yellow #F2C849, blue #2C6CBF, orange #F26A1B, red #D92211, green #02AB3D
-
+        // Control layers 
 
         let sLabels = {}
 
